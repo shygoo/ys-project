@@ -1,0 +1,194 @@
+<style>
+#canvas {
+    width: 6656px;
+    height: 512px;
+    background: #111;
+    margin: 10px;
+}
+
+#canvas-curtile {
+    width: 128px;
+    height: 128px;
+    background: #111;
+    margin: 10px;
+    image-rendering: pixelated;
+}
+
+#canvas-tileset {
+    width: 1024px;
+    height: 128px;
+    background: #111;
+    margin: 10px;
+}
+</style>
+
+<input type="file" id="input">
+
+<canvas id="canvas" width="6656" height="512"></canvas><br>
+<canvas id="canvas-curtile" width="16" height="16"></canvas><br>
+<input type="range"><br>
+<input type="range"><br>
+<input type="range"><br>
+<canvas id="canvas-tileset" width="256" height="32"></canvas>
+
+<script>
+
+function getXY(mouseEvent)
+{
+    var target = mouseEvent.target;
+    var rect = target.getBoundingClientRect();
+    var style = getComputedStyle(target);
+    var styleWidth = parseInt(style.width);
+    var styleHeight = parseInt(style.height);
+    var ratioX = (styleWidth / target.width);
+    var ratioY = (styleHeight / target.height);
+    var x = ((mouseEvent.clientX - rect.x) / ratioX) | 0;
+    var y = ((mouseEvent.clientY - rect.y) / ratioY) | 0;
+    return { x: x, y: y };
+}
+
+function CurTile(selector)
+{
+    var domCanvas = document.querySelector('#canvas-curtile');
+    var ctx = domCanvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    domCanvas.onmousemove = function(e)
+    {
+        if(e.buttons & 1)
+        {
+            var coords = getXY(e);
+            ctx.fillStyle = "#AAA";
+            ctx.fillRect(coords.x, coords.y, 1, 1);
+        }
+    }
+
+    domCanvas.onmousedown = function(e)
+    {
+        var coords = getXY(e);
+        ctx.fillStyle = "#AAA";
+        ctx.fillRect(coords.x, coords.y, 1, 1);
+    }
+}
+
+function LevelMaker()
+{
+    var curTile = CurTile('#canvas-curtile');
+
+    var domCanvas = document.querySelector('#canvas');
+    
+    var domCanvasTileset = document.querySelector('#canvas-tileset');
+
+    var ctx = domCanvas.getContext('2d');
+
+    var collisionAB = new ArrayBuffer(0x6800);
+    this.collisionDV = new DataView(collisionAB); 
+
+    input.onchange = function(e)
+    {
+        var file = e.target.files[0];
+        var url = URL.createObjectURL(file);
+        var im = new Image();
+
+
+        im.onload = function()
+        {
+            URL.revokeObjectURL(this.src);
+            ctx.drawImage(this, 0, 0);
+            //meme();
+        }
+
+        im.crossOrigin = "anonymous";
+        im.src = url;
+    }
+
+    var _this = this;
+    this.domCanvas = domCanvas;
+    this.ctx = ctx;
+
+    this.tiles = []; // array of ImageData
+    this.tileMap = []; // array of indeces
+
+    domCanvas.onmousemove = function(e)
+    {
+        if(e.buttons & 1)
+        {
+            var sel = _this.getRowCol(e);
+            ctx.fillStyle = "#aaa"
+            ctx.fillRect(sel.col * 16, sel.row * 16, 16, 16);
+
+            var idx = sel.row * 416 + sel.col;
+            _this.collisionDV.setUint16(idx*2, 0x0701);
+        }
+    }
+
+    domCanvas.onmousedown = function(e)
+    {
+        if(e.buttons & 1)
+        {
+            var sel = _this.getRowCol(e);
+            ctx.fillStyle = "#aaa"
+            ctx.fillRect(sel.col * 16, sel.row * 16, 16, 16);
+
+            //var idx = (sel.row/2|0) * 16 + sel.col;
+            //if(sel.row & 1) idx += 6656;
+            console.log(sel)
+            var idx = sel.row * 416 + sel.col;
+            _this.collisionDV.setUint16(idx*2, 0x0701);
+        }
+    }
+
+    domCanvas.oncontextmenu = function(e)
+    {
+        e.preventDefault();
+        return false;
+    }
+}
+
+LevelMaker.prototype.getCollision = function()
+{
+    //var str = "";
+    //for(var i = 0; i < this.collisionDV.byteLength; i += 2)
+    //{
+    //    var col = this.collisionDV.getUint16(i);
+    //    var hex = col.toString(16);
+    //    while(hex.length < 4) hex = "0" + hex;
+    //    str += hex + " ";
+    //}
+    var str = "";
+
+    for(var i = 0; i < 16; i++)
+    {
+        for(var j = 0; j < 416; j++)
+        {
+            var idx = i*416+j;
+            var hex = this.collisionDV.getUint16(idx*2).toString(16).toUpperCase();
+            while(hex.length < 4) hex = "0" + hex;
+            str += hex + " ";
+            if((i+1)%16 == 0) str += '\n'
+        }
+
+        for(var j = 0; j < 416; j++)
+        {
+            var idx = i*416+j + 6656;
+            var hex = this.collisionDV.getUint16(idx*2).toString(16).toUpperCase();
+            while(hex.length < 4) hex = "0" + hex;
+            str += hex + " ";
+            if((i+1)%16 == 0) str += '\n'
+        }
+    }
+
+    console.log(str);
+}
+
+LevelMaker.prototype.getRowCol = function(mouseEvent)
+{
+    var coords = getXY(mouseEvent);
+    var row = (coords.y / 16) | 0;
+    var col = (coords.x / 16) | 0;
+    return {row: row, col: col};
+}
+
+var lm = new LevelMaker();
+
+</script>

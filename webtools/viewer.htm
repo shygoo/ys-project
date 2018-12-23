@@ -1,0 +1,40 @@
+
+<script src="smsr00.js"></script>
+<script src="memory.js"></script>
+<script src="yoshiviewer.js"></script>
+
+
+<input type="file" id="rom">
+
+<canvas id="canvas" style="width: 6656px; height: 512px; background: #111;" width="6656" height="512"></canvas>
+
+<script>
+
+var viewer = new YV('#canvas');
+
+document.querySelector('#rom').onchange = function(e)
+{
+    var reader = new FileReader();
+
+    console.log(this)
+
+    reader.readAsArrayBuffer(this.files[0])
+
+    reader.onloadend = function()
+    {
+        onromloaded(this.result);
+    }
+}
+
+
+function onromloaded(romAB)
+{
+    viewer.setRom(romAB);
+    viewer.loadLevel(0x2B);
+    //viewer._tileTest(832);
+    viewer.render();
+    
+}
+
+
+</script>

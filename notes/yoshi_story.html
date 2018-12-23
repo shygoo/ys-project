@@ -1,0 +1,440 @@
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+<style>
+body,html {
+    margin: 50px;
+    font-family: 'Open Sans', arial;
+    font-size: 14px;
+    background-color: #222;
+    color: #EEE;
+}
+
+pre {
+    border: 1px solid #222;
+    padding: 10px;
+    font-size: 12px;
+    background-color: #111;
+    color: #EEE;
+}
+
+div.block {
+    border: 1px solid #222;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #333;
+    max-width: 1024px;
+}
+
+div.heading {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+
+<div class="heading">Yoshi's Story (U) Hacking Notes</div>
+<div class="block">
+<div class="heading">ROM bank-offset addressing</div>
+
+Yoshi's Story uses 32-bit bank-offsets to point to resources in ROM. The bank table is located at 000A79D4 (800A6DD4 in RAM). Only banks 00, 03, and 04 are utilized.
+
+<pre>
+/*Bank 00*/ 00001060
+/*Bank 01*/ 00000000
+/*Bank 02*/ 00000000
+/*Bank 03*/ 00526EC0
+/*Bank 04*/ 00B47A10
+/*Bank 05*/ 00000000
+/*Bank 06*/ 00000000
+/*Bank 07*/ 00000000
+/*Bank 08*/ 00000000
+/*Bank 09*/ 00000000
+/*Bank 0A*/ 00000000
+/*Bank 0B*/ 00000000
+/*Bank 0C*/ 00000000
+/*Bank 0D*/ 00000000
+/*Bank 0E*/ 00000000
+/*Bank 0F*/ 00000000
+</pre>
+
+Bank-offsets are 32 bits, containing a 4-bit bank number and a 24-bit offset  
+<pre>
+---- bbbb oooooooooooooooooooooooo
+
+-: unused bits
+b: 4-bit bank number
+o: 24-bit offset
+</pre>
+
+A bank-offset to ROM address conversion formula could look something like this:
+<pre>
+u8  bankNum = (bankOffset &gt;&gt; 24) &amp; 0x0F;
+u32 offset = bankOffset &amp; 0x00FFFFFF;
+u32 romAddress = gRomBanks[bankNum] + offset;
+</pre>
+
+</div>
+
+<div class="block">
+    <div class="heading">Levels</div>
+    000A84A0 Level list - array of 177 LevelEntry structs.
+<pre>
+struct LevelEntry
+{
+    /*00*/ u32 unk00;
+    /*04*/ u32 boLevelInfo; // bank-offset of LevelInfo struct
+};
+</pre>
+
+<pre>
+struct LevelInfo
+{
+    /*00*/ u8    unk00[8];
+    /*08*/ f32   unk08;
+    /*0C*/ u8    unk0C[24];
+    /*24*/ void *unk24;
+    /*28*/ u8    unk28[4];
+    /*2C*/ f32   unk2C;
+    /*30*/ f32   unk30;
+    /*34*/ u8    unk34[4];
+    /*38*/ f32   unk38;
+    /*3C*/ f32   unk3C;
+    /*40*/ u8    unk40[4];
+    /*44*/ f32   unk44;
+    /*48*/ f32   unk48;
+    /*4C*/ f32   unk4C;
+    /*50*/ u8    unk50[4];
+    /*54*/ f32   unk54;
+    /*58*/ u8    unk58[4];
+    /*5C*/ u32   boObjectPlacementListInfoPtr; // bank-offset of bank-offset of ObjectPlacementListInfo
+    /*60*/ u16   unk60[0x98];                  // seems to be a list of objectId's to preload? terminated by 0xFFFF? unknown size
+    /*F8*/ u8    unkF8[28];
+};
+</pre>
+
+<pre>
+struct ObjectPlacementListInfo
+{
+    /*00*/ u16 numObjects;         // number of ObjectPlacement structs in the array
+    /*02*/ u16 unk02;              // probably padding
+    /*04*/ u32 boObjectPlacements; // bank-offset of ObjectPlacement array
+};
+</pre>
+
+<pre>
+struct ObjectPlacement
+{
+    u16 objectId; // object ID
+    u16 layer;    // seems to be the drawing layer, collision is active on layer 0x0001
+    f32 x;        // x coordinate in level
+    f32 y;        // y coordinate in level
+};
+</pre>
+</div>
+
+<div class="block">
+    <div class="heading">Objects</div>
+    000A1C90 Object lookup table - array of 1582 ObjectEntry structs
+<pre>
+struct ObjectEntry
+{
+    /*00*/ u16 objectId;  // unique identifier
+    /*02*/ u16 unk02;     // probably padding
+    /*04*/ u32 boObjectA; // bank-offset of ObjectA struct
+    /*08*/ u32 boObjectB; // bank-offset of ObjectB struct
+};
+</pre>
+
+<pre>
+struct ObjectA
+{
+    /*00*/ u8    unk00[8];             // unknown data
+    /*08*/ void *bhvInitFunc;          // seems to point to native function which returns a pointer to the object's behavior function
+    /*0C*/ u8    unk0C[12];            // unknown data
+    /*18*/ u16   objectId;             // unique identifier
+    /*1A*/ u16   unk1A;                // probably padding
+
+    /*1C*/ u32   tileDimensionsSize;   // sizeof(TileDimensions)
+    /*20*/ u32   boTileDimensions;     // bank-offset of TileDimensions struct
+
+    /*24*/ u32   tileDataInfoSize;     // sizeof(BlockInfo)
+    /*28*/ u32   boTileDataInfo;       // bank-offset of BlockInfo struct for the tiles' 8bit color-index data
+
+    /*2C*/ u32   tilePaletteInfoSize;  // sizeof(BlockInfo)
+    /*30*/ u32   boTilePaletteInfo;    /* bank-offset of BlockInfo struct for the tiles' palette data
+                                          palette data is a 0x200 byte array of rgba5551 (u16) colors */
+
+    /*34*/ u32   tileMapInfoSize;      // sizeof(BlockInfo)
+    /*38*/ u32   boTileMapInfo;        /* bank-offset of BlockInfo struct for the tile map
+                                          the tile map is a u16 array tile indeces */
+
+    /*3C*/ u32   unkData1InfoSize;     // sizeof(BlockInfo)
+    /*40*/ u32   boUnkData1;           // bank-offset of BlockInfo struct for ??
+
+    /*44*/ u32   unkData2InfoSize;     // sizeof(BlockInfo)
+    /*48*/ u32   boUnkData2;           // bank-offset of BlockInfo struct for ??
+
+    /*4C*/ u32   collisionMapInfoSize; // sizeof(BlockInfo)
+    /*50*/ u32   boCollisionMapInfo;   /* bank-offset of BlockInfo struct for collision data
+                                          the collision map is a u16 array, parallel to the tile map array */
+
+    /*54*/ u8    unk54[16];            // unknown data
+};
+</pre>
+
+<pre>
+struct ObjectB
+{
+    // unknown
+};
+</pre>
+
+<pre>
+struct TileDimensions
+{
+    /*00*/ u16 unk00;      // ?? related to width
+    /*02*/ u16 unk02;      // ?? related to height
+    /*04*/ u16 tileWidth;  // width of an individual tile
+    /*08*/ u16 tileHeight; // height of an individual tile
+    /*0C*/ u16 mapWidth;   // width of the whole map (num tiles X * tileWidth)
+    /*10*/ u16 mapHeight   // height of the whole map (num tiles Y * tileHeight)
+};
+
+// examples
+// level 1 terrain: 0100 0100 0010 0010 1A00 0200
+// apple:           0018 0015 0018 0015 0018 00BD
+// watermelon:      0018 0015 0018 0015 0018 00BD
+</pre>
+
+<pre>
+struct BlockInfo
+{
+    /*00*/ u32 size;    // decoded block size
+    /*04*/ u32 sizeEnc; // encoded block size
+    /*08*/ u32 boData;  /* bank-offset of the data (may be a CMPR or raw)
+                           if the data is raw, both size and sizeEnc will be the same value */
+};
+</pre>
+
+Known object IDs:
+<pre>
+4001 Yoshi spawn point
+4030 Apple
+4031 Banana
+4032 Watermelon
+4033 Grapes
+403A Shyguy
+406F Coin
+4086 Egg box
+40B8 Surprise ball
+40C3 Fence
+4147 Start flag
+414A Goal flag
+417F Hidden shyguy
+4199 Unknown
+419C Shyguy 2
+41D1 Apple bubble
+41D2 Banana bubble
+41D3 Watermelon bubble
+41D5 Melon bubble
+41E8 Path split right
+41EA Path split left
+4208 Teleport jar thing
+4507 Miss warp 1
+4508 Miss warp 2
+4536 Pak e derm
+45BC Hidden melon
+45BD Hidden melon activator
+45F4 Tip box
+4684 Other box
+4686 Flower
+46A8 Watermelon bubble 2
+473D Secret coin
+8067 Level 1 terrain
+</pre>
+</div>
+
+<div class="block">
+    <div class="heading">Compression</div>
+    Yoshi's Story uses an LZ77-type compression format called SMSR00. It is very similar to SM64's MIO0 format.
+    Each SMSR00 block in ROM is preceded by a 16-byte 'CMPR' header which contains the size of the encoded block and the size of the block when it's decoded.
+    <pre>
+struct CMPRHeader
+{
+    /*00*/ char cmprSignature[4]; // 'CMPR'
+    /*04*/ u32  sizeEnc;          // size of encoded data
+    /*08*/ u32  size;             // size of decoded data
+    /*0C*/ u32  unused;           // probably padding
+};</pre>
+
+<pre>
+struct SMSRHeader
+{
+    /*00*/ char smsrSignature[6]; // 'SMSR00'
+    /*06*/ u8   unused[2];        // padding
+    /*08*/ u32  outputSize;       // size of decoded data
+    /*0C*/ u32  dataOffset;       // offset of the data section in the smsr00 block
+};</pre>
+
+
+SMSR00 decoder implementation in C:
+<pre>
+#include &lt;stdint.h&gt;
+
+#define BSWAP32(v) ((((v) &amp; 0x000000FF) &lt;&lt; 24) | \
+        (((v) &amp; 0x0000FF00) &lt;&lt;  8) | \
+        (((v) &amp; 0x00FF0000) &gt;&gt;  8) | \
+        (((v) &amp; 0xFF000000) &gt;&gt; 24))
+
+#define BSWAP16(v) ((((v) &amp; 0x00FF) &lt;&lt; 8) | \
+        (((v) &amp; 0xFF00) &gt;&gt; 8))
+
+void smsr00_decode(uint8_t *src, uint8_t *dst)
+{
+    size_t outputSize = BSWAP32(*(uint32_t*)(src + 0x08));
+    size_t dataOffs = BSWAP32(*(uint32_t*)(src + 0x0C));
+    src += 0x10;
+
+    uint8_t *dstEnd = dst + outputSize;
+    uint8_t *data = src + dataOffs;
+
+    int numCtrlBits = 0;
+    int16_t ctrlBits;
+
+    while(dst &lt; dstEnd)
+    {
+        if(numCtrlBits == 0)
+        {
+            ctrlBits = BSWAP16(*(int16_t*) src);
+            numCtrlBits = 0x10;
+            src += 2;
+        }
+
+        if(ctrlBits &amp; 0x8000)
+        {
+            *dst++ = *data++;
+        }
+        else
+        {
+            uint16_t pair = BSWAP16(*(uint16_t*) src);
+            src += 2;
+
+            int length = (pair >> 12) + 3;
+            int offset = (pair &amp; 0x0FFF) - 1;
+            uint8_t *windowPtr = dst - offset - 2;
+
+            while(length--)
+            {
+               *dst++ = *windowPtr++;
+            }
+        }
+
+        ctrlBits &lt;&lt;= 1;
+        numCtrlBits--;
+    }
+}
+</pre>
+
+SMSR00 decoder implementation in JS:
+<pre>
+function smsr00_decode(romDV, romOffset)
+{
+    var srcOffs = romOffset + 0x10;
+    var outputSize = romDV.getUint32(romOffset + 0x08);
+    var dataOffs = srcOffs + romDV.getUint32(romOffset + 0x0C);
+    
+    var dst = new ArrayBuffer(outputSize);
+    var dstDV = new DataView(dst);
+
+    var dstOffs = 0;
+
+    var numCtrlBits = 0;
+    var ctrlBits;
+    
+    while(dstOffs &lt; outputSize)
+    {
+        if(numCtrlBits == 0)
+        {
+            numCtrlBits = 16;
+            ctrlBits = romDV.getUint16(srcOffs);
+            srcOffs += 2;
+        }
+
+        if(ctrlBits &amp; 0x8000)
+        {
+            dstDV.setUint8(dstOffs++, romDV.getUint8(dataOffs++));
+        }
+        else
+        {
+            var pair = romDV.getUint16(srcOffs);
+            srcOffs += 2;
+
+            var length = (pair >> 12) + 3;
+            var offset = (pair &amp; 0x0FFF) - 1;
+            var windowOffs = (dstOffs - offset) - 2;
+
+            while(length--)
+            {
+                dstDV.setUint8(dstOffs++, dstDV.getUint8(windowOffs++));
+            }
+        }
+
+        ctrlBits &lt;&lt;= 1;
+        numCtrlBits--;
+    }
+
+    return dstDV;
+}
+</pre>
+
+</div>
+
+<div class="block">
+<div class="heading">ROM Map</div>
+<pre>
+ROM Addr  Bank-offset
+000A1C90  --------    Object lookup table
+000A79D4  --------    ROM bank table
+000A84A0  --------    Level list
+006471CC              Fruit color palette
+006466B0              Fruit tiles ci data (CMPR/SMSR)
+0078B0A0  032641E0    Level 1 terrain tiles ci data (CMPR/SMSR)
+00796718  0326F858    Level 1 terrain tile map (CMPR/SMSR)
+00798A00              Level 1 terrain tiles palette
+00B51B4C  0400A13C    Level 1 object placements
+</pre>
+</div>
+
+<div class="block">
+<div class="heading">RAM Map</div>
+Functions
+<pre>
+80051364 writes object id to a list in memory around 800FEB0C
+8005B134 function responsible for looking up bank offset of gfx stuff from memory (800A437C level 1 gfx bankoffset)
+800657CC function that writes tile indeces
+8006758C does something with bank address
+8006B454 other function writes tile indeces
+8006BB04 some sort of copy function
+8006DA0C load_level(a0 = pointer to some struct, a1 = level index)
+8006F560 smsr00_decode(void *src, void *dst)
+8007711C function writes palette to bg
+8007D5E0 dl_push_background(struct BgSource *bgSrc, struct UnkStruct1 *unk1)
+800891D0 function prepares rom addresses?
+80089800 parent function for dma
+80089B20 line makes call to dma function
+80089C90 dmacopy(int unk, u32 phys_romaddr, void *dst, u32 size)
+</pre>
+
+Data
+<pre>
+800C958C yoshi y pos
+
+While in Level 1:
+
+ 80285D6C collected fruit 0 image pointer A
+ 8028630C collected fruit 0 image pointer B
+ 802C6B50 yoshi's dlist around here, gets DMA copied
+</pre>
+</div>

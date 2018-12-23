@@ -1,0 +1,209 @@
+<input type="file" id="input">
+<canvas id="canvas" width="6656" height="512"></canvas>
+
+<script>
+var canvas = document.querySelector('#canvas');
+var ctx = canvas.getContext('2d');
+var input = document.querySelector('#input');
+
+input.onchange = function(e)
+{
+    var file = e.target.files[0];
+    var url = URL.createObjectURL(file);
+    var im = new Image();
+    
+
+    im.onload = function()
+    {
+        URL.revokeObjectURL(this.src);
+        ctx.drawImage(this, 0, 0);
+        meme();
+    }
+
+    im.crossOrigin = "anonymous";
+    im.src = url;
+}
+
+
+function TileSet()
+{
+    this.set = [];
+}
+
+TileSet.prototype.add = function(imageData)
+{
+    var imDV = new DataView(imageData.data.buffer);
+
+    for(var i = 0; i < this.set.length; i++)
+    {
+        var setImDV = new DataView(this.set[i].data.buffer);
+        var match = true;
+
+        for(var j = 0; j < imDV.byteLength; j += 4)
+        {
+            if(setImDV.getUint32(j) != imDV.getUint32(j))
+            {
+                match = false;
+                break;
+            }
+        }
+
+        if(match == true)
+        {
+            return i;
+        }
+    }
+    // no match
+    return this.set.push(imageData) - 1;
+}
+
+TileSet.prototype.getPalette = function()
+{
+    var palette = [];
+
+    for(var i = 0; i < this.set.length; i++)
+    {
+        var setImU32 = new DataView(this.set[i].data.buffer);
+
+        for(var j = 0; j < setImU32.byteLength; j += 4)
+        {
+            var color = setImU32.getUint32(j);
+            var haveColor = false;
+
+            for(var k = 0; k < palette.length; k++)
+            {
+                if(palette[k] == color)
+                {
+                    haveColor = true;
+                    break;
+                }
+            }
+
+            if(!haveColor)
+            {
+                palette.push(color);
+            }
+        }
+    }
+
+    return palette;
+}
+
+function meme()
+{
+    var tileMap = [];
+    var tileSet = new TileSet();
+
+    console.log("generating tileset...")
+
+    for(var row = 0; row < 32; row++)
+    {
+        for(var col = 0; col < 416; col++)
+        {
+            var imageData = ctx.getImageData(col*16, row*16, 16, 16);
+            var tileIndex = tileSet.add(imageData);
+            tileMap.push(tileIndex);
+        }
+    }
+
+    for(var i = 0; i < tileSet.set.length; i++)
+    {
+        ctx.putImageData(tileSet.set[i], i*16, 0);
+    }
+
+    // generate palette
+    var palette = tileSet.getPalette(); // rgba32 palette
+    var palette16AB = new ArrayBuffer(0x200);
+    var palette16DV = new DataView(palette16AB); // rgba16 palette
+
+    for(var i = 0; i < palette.length; i++)
+    {
+        var c = palette[i];
+        var r = (c >> 27) & 0x1F;
+        var g = (c >> 19) & 0x1F;
+        var b = (c >> 11) & 0x1F;
+
+        var c16 = (r << 11) | (g << 6) |(b << 1) | 1;
+
+        palette16DV.setUint16(i*2, c16);
+    }
+
+    // convert tile data to ci8 indeces
+    var tileDataAB = new ArrayBuffer(tileSet.set.length * 16 * 16);
+    var tileDataU8 = new Uint8Array(tileDataAB);
+
+    for(var i = 0; i < tileSet.set.length; i++)
+    {
+        var imgDV = new DataView(tileSet.set[i].data.buffer);
+
+        for(var j = 0; j < imgDV.byteLength; j += 4)
+        {
+            var color32 = imgDV.getUint32(j);
+
+            for(var k = 0; k < palette.length; k++)
+            {
+                if(palette[k] == color32)
+                {
+                    tileDataU8[i*256+j/4] = k;
+                    break;
+                }
+            }
+        }
+    }
+
+    /////
+
+    var str = ''
+    for(var i = 0; i < 256; i++)
+    {
+        var hex = palette16DV.getUint16(i*2).toString(16).toUpperCase();
+        while(hex.length < 4) hex = "0" + hex;
+        
+        str += hex + " ";
+        if((i+1)%16 == 0) str += '\n'
+    }
+    console.log("palette:\n" + str);
+
+    str = '';
+    for(var i = 0; i < tileDataU8.length; i++)
+    {
+        var hex = tileDataU8[i].toString(16).toUpperCase();
+        while(hex.length < 2) hex = "0" + hex;
+        str += hex + " ";
+        if((i+1)%16 == 0) str += '\n'
+    }
+    console.log("tile data:\n" + str);
+
+    //console.log(tileDataU8);
+    
+    console.log(tileMap)
+
+    str = "";
+    for(var i = 0; i < 16; i++)
+    {
+        for(var j = 0; j < 416; j++)
+        {
+            var hex = tileMap[i*416+j].toString(16).toUpperCase();
+            while(hex.length < 4) hex = "0" + hex;
+            str += hex + " ";
+            if((i+1)%16 == 0) str += '\n'
+        }
+
+        for(var j = 0; j < 416; j++)
+        {
+            var hex = tileMap[i*416+j + 6656].toString(16).toUpperCase();
+            while(hex.length < 4) hex = "0" + hex;
+            str += hex + " ";
+            if((i+1)%16 == 0) str += '\n'
+        }
+    }
+
+    console.log(str);
+
+    
+
+    //console.log(tileSet);
+}
+
+
+</script>
