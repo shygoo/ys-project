@@ -1,15 +1,10 @@
 #include <stdint.h>
 #include "smsr00.h"
+#include "bswap.h"
 
 #include <stdio.h>
 
-#define BSWAP32(v) ((((v) & 0x000000FF) << 24) | \
-                    (((v) & 0x0000FF00) <<  8) | \
-                    (((v) & 0x00FF0000) >>  8) | \
-                    (((v) & 0xFF000000) >> 24))
-
-#define BSWAP16(v) ((((v) & 0x00FF) << 8) | \
-                    (((v) & 0xFF00) >> 8))
+const char SMSR00_SIG[6] = {'S','M','S','R','0','0'};
 
 size_t smsr00_get_output_size(uint8_t *src)
 {
