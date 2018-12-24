@@ -242,21 +242,15 @@ void dump_object_info_type_0001(FILE *fp, uint8_t *objA)
 void  dump_object_info_type_0002(FILE *fp, uint8_t *objA)
 {
     uint16_t objA_type = U16_BE(objA, 0x00);
-    uint8_t  objA_unk04 = objA[0x04];
-    uint32_t objA_unk08 = U32_BE(objA, 0x08); // rom start
-    uint32_t objA_unk0C = U32_BE(objA, 0x0C); // rom end
+    uint8_t  objA_unk04 = objA[0x04];         // 1 = use overlay, 0 = no overlay
+    uint32_t objA_unk08 = U32_BE(objA, 0x08); // rom start overlay file
+    uint32_t objA_unk0C = U32_BE(objA, 0x0C); // rom end overlay file
     uint32_t objA_unk10 = U32_BE(objA, 0x10); // fake ram start
     uint32_t objA_unk14 = U32_BE(objA, 0x14); // fake ram end
 
-    // endptr - last word in the block = relocation info start
+    /*
 
-    // 800DA840 overlay table
-    // array of { void *location, u16 objectNum, u16 _pad,  void *fakeMemStart, void *fakeMemEnd }
-
-    // 800FE96C relocation table around here
-    // 8033a920 800fe958 00c2e050
-
-    // func_80081430(void *overlay_block, void *relocation_block); // linker routine
+    */
 
     /*
         if unk04 is 00, unk08 is a pointer to a native function (8005BE50),
@@ -271,25 +265,6 @@ void  dump_object_info_type_0002(FILE *fp, uint8_t *objA)
    //    func_8008169C(unk08, unk0c, unk10, unk14, res)
    //    return res;
    // }
-
-
-   // 80341A60 44 00 03 d4
-   // 80341530+03D4
-
-   // Relocation structure
-   // ss -- rrrr oooooooooooooooooooooooo
-   // s: section (0=invalid?, 1=.text, 2=.data, 3=.rodata)
-   // -: unused bits
-   // r: relocation type (4 = R_MIPS_26, 5 = R_MIPS_HI16, 6 = R_MIPS_LO16)
-   // o: offset
-
-   // top two bits selects one of these 800FE9A8
-   // 00000000 invalid
-   // 80341af0 .text
-   // 80341c10  80341C10
-   // 80341c20
-
-
 
     fprintf(fp,
         "    type    %04X\n"

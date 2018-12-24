@@ -4,7 +4,7 @@
 body,html {
     margin: 50px;
     font-family: 'Open Sans', arial;
-    font-size: 14px;
+    font-size: 13px;
     background-color: #222;
     color: #EEE;
 }
@@ -30,15 +30,32 @@ div.heading {
     font-weight: bold;
     margin-bottom: 10px;
 }
+
+a{
+    color: #0EE;
+    text-decoration: none;
+    font-weight: bold;
+}
 </style>
 </head>
 
 
 <div class="heading">Yoshi's Story (U) Hacking Notes</div>
-<div class="block">
-<div class="heading">ROM bank-offset addressing</div>
 
-Yoshi's Story uses 32-bit bank-offsets to point to resources in ROM. The bank table is located at 000A79D4 (800A6DD4 in RAM). Only banks 00, 03, and 04 are utilized.
+<div class="block">
+    <a href="#ROM_bank_offset_addressing">Bank-offsets</a><br>
+    <a href="#Levels">Levels</a><br>
+    <a href="#Objects">Objects</a><br>
+    <a href="#Overlays">Overlays</a><br>
+    <a href="#Compression">Compression</a><br>
+    <a href="#ROM_Map">ROM Map</a><br>
+    <a href="#RAM_Map">RAM Map</a><br>
+</div>
+
+<div class="block">
+<div class="heading" id="ROM_bank_offset_addressing">ROM bank-offset addressing</div>
+
+Yoshi's Story uses 32-bit bank-offsets to point to some resources in ROM. The bank table is located at 000A79D4 (800A6DD4 in RAM). Only banks 00, 03, and 04 seem to be utilized.
 
 <pre>
 /*Bank 00*/ 00001060
@@ -78,7 +95,7 @@ u32 romAddress = gRomBanks[bankNum] + offset;
 </div>
 
 <div class="block">
-    <div class="heading">Levels</div>
+    <div class="heading" id="Levels">Levels</div>
     000A84A0 Level list - array of 177 LevelEntry structs.
 <pre>
 struct LevelEntry
@@ -135,7 +152,7 @@ struct ObjectPlacement
 </div>
 
 <div class="block">
-    <div class="heading">Objects</div>
+    <div class="heading" id="Objects">Objects</div>
     000A1C90 Object lookup table - array of 1582 ObjectEntry structs
 <pre>
 struct ObjectEntry
@@ -148,13 +165,41 @@ struct ObjectEntry
 </pre>
 
 <pre>
-struct ObjectA
+struct OverlayInfo
 {
-    /*00*/ u8    unk00[8];             // unknown data
-    /*08*/ void *bhvInitFunc;          // seems to point to native function which returns a pointer to the object's behavior function
-    /*0C*/ u8    unk0C[12];            // unknown data
+    /*00*/ u32   romStart;
+    /*04*/ u32   romEnd;
+    /*08*/ void *fakeMemStart;
+    /*0C*/ void *fakeMemEnd;
+};
+</pre>
+
+<pre>
+union AsmInfo
+{
+    /*00*/ void *nativeFunc;
+    /*00*/ struct OverlayInfo overlayInfo;
+};
+</pre>
+
+<pre>
+struct ObjectA_0000
+{
+    /*00*/ u16   type;                 // structure type (0x0001)
+           u8    _pad02[2];
+    /*04*/ u8    useOverlay;           // 1 if asmInfo.overlayInfo is to be used
+           u8    _pad05[3];
+
+    /*08*/ union AsmInfo asmInfo;
+
+    /*08   asmInfo.nativeFunc
+      08   asmInfo.overlayInfo.romStart
+      0C   asmInfo.overlayInfo.romEnd
+      10   asmInfo.overlayInfo.fakeMemStart
+      14   asmInfo.overlayInfo.fakeMemEnd */
+
     /*18*/ u16   objectId;             // unique identifier
-    /*1A*/ u16   unk1A;                // probably padding
+    /*1A*/ u16   unk1A;
 
     /*1C*/ u32   tileDimensionsSize;   // sizeof(TileDimensions)
     /*20*/ u32   boTileDimensions;     // bank-offset of TileDimensions struct
@@ -181,6 +226,45 @@ struct ObjectA
                                           the collision map is a u16 array, parallel to the tile map array */
 
     /*54*/ u8    unk54[16];            // unknown data
+};
+</pre>
+
+<pre>
+struct ObjectA_0001 // only used for yoshi
+{
+    /*00*/ u16 type;   // structure type (0x0001)
+    /*04*/ u8  unk04;
+    /*08*/ u32 unk08;
+    /*18*/ u16 unk18;
+    /*1C*/ u8  unk1C;
+    /*1D*/ u8  unk1D;
+    /*20*/ u32 boUnk20;
+    /*24*/ u32 boUnk24;
+    /*28*/ u32 boUnk28;
+    /*2C*/ u32 unk2C;
+    /*30*/ u32 boUnk30;
+    /*34*/ u32 unk34;
+    /*38*/ u32 unk38;
+    /*3C*/ u32 unk3C;
+    /*40*/ u32 boUnk40;
+};
+</pre>
+
+<pre>
+struct ObjectA_0002
+{
+    /*00*/ u16 type;      // structure type (0x0002)
+           u8 _pad02[2];
+    /*04*/ u8 useOverlay; // 1 if asmInfo.overlayInfo is to be used
+           u8 _pad05[3];
+
+    /*08*/ union AsmInfo asmInfo;
+
+    /*08   asmInfo.nativeFunc
+      08   asmInfo.overlayInfo.romStart
+      0C   asmInfo.overlayInfo.romEnd
+      10   asmInfo.overlayInfo.fakeMemStart
+      14   asmInfo.overlayInfo.fakeMemEnd */
 };
 </pre>
 
@@ -257,7 +341,59 @@ Known object IDs:
 </div>
 
 <div class="block">
-    <div class="heading">Compression</div>
+    <div class="heading" id="Overlays">Overlays</div>
+    Yoshi's Story uses overlays to save memory. The structure for overlay files is as follows:
+<pre>
+u8  text[textSize]
+u8  data[dataSize]
+u8  rodata[rodataSize]
+meta {
+    u32 textSize
+    u32 dataSize
+    u32 rodataSize
+    u32 bssSize
+    u32 numRelocations
+    u32 relocations[numRelocations]
+    u32 metaSize
+}
+</pre>
+
+    <ul>
+        <li>The position of the meta section is calculated by subtracting metaSize from the total size of the overlay file.
+        <li>The .bss section is allocated immediately after the overlay file in memory.
+    </ul>
+
+    Relocation bitfields:
+
+<pre>
+ss -- rrrr oooooooooooooooooooooooo
+
+s: Section (0 = invalid?, 1 = .text, 2 = .data, 3 = .rodata)
+-: Unused bits?
+r: Relocation type (4 = R_MIPS_26, 5 = R_MIPS_HI16, 6 = R_MIPS_LO16)
+o: Offset
+</pre>
+
+    The dynamic linker routine is located at 80081430.
+    <pre>func_80081430(void *overlay_block, void *meta_section);</pre>
+
+    The game keeps track of active overlays using an array of the following struct at 800DA840.
+
+<pre>
+struct OverlayEntry
+{
+    /*00*/ void *location;     // actual location in memory
+    /*04*/ u16   objectId;     // id of the object that this overlay belongs to
+           u8    _pad[2];
+    /*08*/ void *fakeMemStart; // fake start address
+    /*0C*/ void *fakeMemEnd;   // fake end address
+};
+</pre>
+
+</div>
+
+<div class="block">
+    <div class="heading" id="Compression">Compression</div>
     Yoshi's Story uses an LZ77-type compression format called SMSR00. It is very similar to SM64's MIO0 format.
     Each SMSR00 block in ROM is preceded by a 16-byte 'CMPR' header which contains the size of the encoded block and the size of the block when it's decoded.
     <pre>
@@ -392,7 +528,7 @@ function smsr00_decode(romDV, romOffset)
 </div>
 
 <div class="block">
-<div class="heading">ROM Map</div>
+<div class="heading" id="ROM_Map">ROM Map</div>
 <pre>
 ROM Addr  Bank-offset
 000A1C90  --------    Object lookup table
@@ -408,7 +544,7 @@ ROM Addr  Bank-offset
 </div>
 
 <div class="block">
-<div class="heading">RAM Map</div>
+<div class="heading" id="RAM_Map">RAM Map</div>
 Functions
 <pre>
 80051364 writes object id to a list in memory around 800FEB0C
