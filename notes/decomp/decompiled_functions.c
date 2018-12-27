@@ -54,6 +54,22 @@ void smsr00_decode(uint8_t *src, uint8_t *dst)
     }
 }
 
+// obj type 2 handler
+int func_80081744(u32 ovlRomStart, u32 ovlRomEnd, u32 ovlFakeMemStart, u32 ovlFakeMemEnd)
+{
+    void *buf = func_80064DD0(ovlFakeMemEnd - ovlFakeMemStart);
+
+    if(!buf)
+    {
+        return NULL;
+    }
+
+    func_8008169C(ovlRomStart, ovlRomEnd, ovlFakeMemStart, ovlFakeMemEnd, buf);
+    return buf;
+}
+
+
+
 // 8007D5E0
 void dl_push_background(struct BgSource *bgSrc, struct UnkStruct1 *unk1)
 {
@@ -169,3 +185,4 @@ void some_copy(uint32_t* dst, int16_t *a1, uint32_t *src, struct SomeCopySetting
 
     if(t4 != t1) goto _8006BB48;
 }
+

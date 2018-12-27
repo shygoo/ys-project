@@ -32,6 +32,7 @@ $(ODIR):
 $(BDIR):
 	mkdir bin
 
-clean: clean_patch
+clean:
 	rm -f ysdump
-	rm -f obj
+	rm -rf $(ODIR)
+	rm -rf $(BDIR)

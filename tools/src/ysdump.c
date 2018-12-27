@@ -7,6 +7,35 @@
 #include "bswap.h"
 #include "rom.h"
 #include "util.h"
+#include "ys_structs.h"
+
+#define ROM_OBJECT_LUT 0x000A1C90
+#define OBJECT_LUT_COUNT 1582
+
+#define ROM_BANK_TABLE 0x000A79D4
+
+// bank offset to rom addr
+uint32_t bo_addr(rom_t *rom, uint32_t bankOffset)
+{
+    // Bank 00: 00001060
+    // Bank 01: 00000000
+    // Bank 02: 00000000
+    // Bank 03: 00526EC0
+    // Bank 04: 00B47A10
+
+    uint32_t *banks = (uint32_t *) &rom->data[ROM_BANK_TABLE];
+
+    uint8_t  bankNum = (bankOffset >> 24) & 0x0F;
+    uint32_t offset = bankOffset & 0x00FFFFFF;
+    uint32_t romAddress = BSWAP32(banks[bankNum]) + offset;
+
+    return romAddress;
+}
+
+void *bo_ptr(rom_t *rom, uint32_t bankOffset)
+{
+    return &rom->data[bo_addr(rom, bankOffset)];
+}
 
 void dump_all_smsr00(rom_t *rom, const char *dirpath)
 {
@@ -36,186 +65,183 @@ void dump_all_smsr00(rom_t *rom, const char *dirpath)
     printf("done\n");
 }
 
-#define ROM_OBJECT_LUT 0x000A1C90
-#define ROM_BANK_TABLE 0x000A79D4
-
-// bank offset to rom addr
-uint32_t bo_addr(rom_t *rom, uint32_t bankOffset)
+void block_info_copy_data(void *dst, rom_t *rom, struct BlockInfo *blockInfo)
 {
-    // Bank 00: 00001060
-    // Bank 01: 00000000
-    // Bank 02: 00000000
-    // Bank 03: 00526EC0
-    // Bank 04: 00B47A10
+    uint32_t addr = bo_addr(rom, blockInfo->boData);
 
-    uint32_t *banks = (uint32_t *) &rom->data[ROM_BANK_TABLE];
-
-    uint8_t  bankNum = (bankOffset >> 24) & 0x0F;
-    uint32_t offset = bankOffset & 0x00FFFFFF;
-    uint32_t romAddress = BSWAP32(banks[bankNum]) + offset;
-
-    return romAddress;
+    if(blockInfo->sizeEnc < blockInfo->size)
+    {
+        smsr00_decode(&rom->data[addr + 0x10], dst);
+    }
+    else
+    {
+        memcpy(dst, &rom->data[addr], blockInfo->size);
+    }
 }
 
-typedef unsigned short u16;
-typedef unsigned int u32;
-
-typedef struct
-{
-    /*00*/ u16 objectId;  // unique identifier
-    /*02*/ u16 unk02;     // probably padding
-    /*04*/ u32 boObjectA; // bank-offset of ObjectA struct
-    /*08*/ u32 boObjectB; // bank-offset of ObjectB struct
-} ObjectEntry;
-
-
-/*
-8005B184 func
-
-800A1090 yosh obj entry
-load u16 objA.unk00 from rom -> 800FEA00
-load top 16 bytes of objA -> 803FB6E0 [00010000 00000000 8001D760 00000000]
-load 0x44 (68) bytes of objA -> 803FB6E0
-jalr calls 0x8005B0AC
-
-8005B0AC func reads from yoshi's objA struct
-8005205C ""
-
-800A1124 apple obj entry
-load u16 objA.unk00 from rom -> 803d0260
-load top 16 bytes of objA -> 803d0260
-load 0x64 (100) bytes of objA -> 803d0260
-
-Yoshi's objA is 0x44 bytes, apple is 0x64 bytes
-
-800A615C objA.unk00 is and index of the jump table here 
-
-struct Struct1
-{
-    u16 type; // objA.unk00 put here
-    u16 _02; // padding
-    struct ObjectA_0001 *objA;
-    u16 unk08;
-    u16 _0A; // padding
-    void *unk0C;
-};
-
-struct ObjectA_0001
-{
-    u8 unk1C;
-    u8 unk1D;
-};
-
-func_8005AF8C(struct Struct1 *a0, u16 objectId) // type 0000 handler
-
-func_8005B0AC(struct Struct1 *ptr, u16 objectId) // type 0001 (yoshi object) handler
-{
-    sp1c = a1
-    func_80051DA0(&ptr->objA, objectId) // fills ptr+4, ptr+8, ptr+0c
-    a2->unk10 = ptr->unk04->unk1C // sb
-    a2->unk40 = ptr->unk0c + 2
-    a2->unk11 = *(u8*)(&ptr->unk04->unk1C + 1) // ? unk04->unk1D?
-    return 1;
-}
-
-func_8005B10C(struct Struct1 *a0, u16 objectId)
+void tiled_ci8_to_rgba32(uint8_t *image, struct TileDimensions *dimensions, uint8_t *tileData, uint16_t *tilePalette, uint16_t *tileMap)
 {
 
 }
 
-*/
+///////////
 
-void dump_object_info_type_0000(FILE *fp, uint8_t *objA)
+void dump_block_info_field(FILE *fp, uint32_t boBlockInfo, const char *label, rom_t *rom)
 {
-    uint32_t objA_type                = U16_BE(objA, 0x00);
-    uint32_t objA_unk02               = U16_BE(objA, 0x02);
-    uint32_t objA_unk04               = U32_BE(objA, 0x04);
-    uint32_t objA_bhvInitFunc         = U32_BE(objA, 0x08);
-    uint32_t objA_unk0C               = U32_BE(objA, 0x0C);
-    uint32_t objA_unk10               = U32_BE(objA, 0x10);
-    uint32_t objA_unk14               = U32_BE(objA, 0x14);
-    uint16_t objA_objectId            = U16_BE(objA, 0x18);
-    uint16_t objA_unk1A               = U16_BE(objA, 0x1A);
-    uint32_t objA_tileDimensionsSize  = U32_BE(objA, 0x1C);
-    uint32_t objA_boTileDimensions    = U32_BE(objA, 0x20);
-    uint32_t objA_tileDataInfoSize    = U32_BE(objA, 0x24);
-    uint32_t objA_boTileDataInfo      = U32_BE(objA, 0x28);
-    uint32_t objA_tilePaletteInfoSize = U32_BE(objA, 0x2C);
-    uint32_t objA_boTilePaletteInfo   = U32_BE(objA, 0x30);
-    uint32_t objA_tileMapInfoSize     = U32_BE(objA, 0x34);
-    uint32_t objA_boTileMapInfo       = U32_BE(objA, 0x38);
-    uint32_t objA_unkData1InfoSize    = U32_BE(objA, 0x3C);
-    uint32_t objA_boUnkData1Info      = U32_BE(objA, 0x40);
-    uint32_t objA_unkData2InfoSize    = U32_BE(objA, 0x44);
-    uint32_t objA_boUnkData2Info      = U32_BE(objA, 0x48);
-    uint32_t objA_collisionMapInfoSize = U32_BE(objA, 0x4C);
-    uint32_t objA_boCollisionMapInfo   = U32_BE(objA, 0x50);
-    uint32_t objA_unk54   = U32_BE(objA, 0x54);
-    uint32_t objA_unk58   = U32_BE(objA, 0x58);
-    uint32_t objA_unk5C   = U32_BE(objA, 0x5C);
-    uint32_t objA_unk60   = U32_BE(objA, 0x60);
+    uint32_t raBlockInfo = bo_addr(rom, boBlockInfo);
+    struct BlockInfo *blockInfo = (struct BlockInfo *) &rom->data[raBlockInfo];
+
+    fprintf(fp, "    %-18s     %08X (%08X)\n", label, boBlockInfo, raBlockInfo);
+    
+    uint32_t raData = bo_addr(rom, blockInfo->boData);
+
+    fprintf(fp,
+        "    ->  size:    %08X\n" // seems like the upper 16 bits are flags
+        "        sizeEnc: %08X\n"
+        "        boData:  %08X (%08X)\n",
+        blockInfo->size, blockInfo->sizeEnc, blockInfo->boData, raData
+    );
+
+    if(blockInfo->sizeEnc > blockInfo->size)
+    {
+        fprintf(fp, "        **** check size\n");
+    }
+}
+
+void dump_object_info_type_0000(FILE *fp, uint16_t objectId, struct ObjectA_0000 *objA, rom_t *rom)
+{
+    struct TileDimensions *tileDimensions = NULL;
+    struct BlockInfo *tileDataInfo = NULL;
+    struct BlockInfo *tilePaletteInfo = NULL;
+    struct BlockInfo *tileMapInfo = NULL;
+    struct BlockInfo *collisionMapInfo = NULL;
 
     fprintf(fp,
         "  ObjectA\n"
-        "    type        %04X\n"
-        "    unk02       %04X\n"
-        "    unk04       %08X\n"
-        "    bhvInitFunc %08X\n"
-        "    unk0C       %08X\n"
-        "    unk10       %08X\n"
-        "    unk14       %08X\n"
-        "    objectId    %04X\n"
-        "    unk1A       %04X\n"
-        "    tileDimensionsSize   %08X\n"
-        "    boTileDimensions     %08X\n"
-        "    tileDataInfoSize     %08X\n"
-        "    boTileDataInfo       %08X\n"
-        "    tilePaletteInfoSize  %08X\n"
-        "    boTilePaletteInfo    %08X\n"
-        "    tileMapInfoSize      %08X\n"
-        "    boTileMapInfo        %08X\n"
-        "    unkData1InfoSize     %08X\n"
-        "    boUnkData1Info       %08X\n"
-        "    unkData2InfoSize     %08X\n"
-        "    boUnkData2Info       %08X\n"
-        "    collisionMapInfoSize %08X\n"
-        "    boCollisionMapInfo   %08X\n"
+        "    type            %04X\n"
+        "    useOverlay      %02X\n",
+        objA->head.type, objA->useOverlay
+    );
+
+    if(!objA->useOverlay)
+    {
+        fprintf(fp, "    nativeFunc      %08X\n", objA->asmInfo.nativeFunc);
+    }
+    else
+    {
+        struct OverlayInfo *ovlInfo = &objA->asmInfo.overlayInfo;
+
+        fprintf(fp,
+            "    ovlRomStart     %08X\n"
+            "    ovlRomEnd       %08X\n"
+            "    ovlFakeMemStart %08X\n"
+            "    ovlFakeMemEnd   %08X\n",
+            ovlInfo->romStart, ovlInfo->romEnd, ovlInfo->fakeMemStart, ovlInfo->fakeMemEnd
+        );
+    }
+
+    fprintf(fp,
+        "    objectId        %04X\n"
+        "    unk1A           %04X\n",
+       objA->objectId, objA->unk1A
+    );
+
+    if(objA->boTileDimensions != 0)
+    {
+        uint32_t raTileDimensions = bo_addr(rom, objA->boTileDimensions);
+        tileDimensions = (struct TileDimensions *) &rom->data[raTileDimensions];
+
+        fprintf(fp, "    boTileDimensions     %08X (%08X)\n", objA->boTileDimensions, raTileDimensions);
+
+        fprintf(fp,
+            "    ->  unk00:      %04X\n"
+            "        unk02:      %04X\n"
+            "        tileWidth:  %04X\n"
+            "        tileHeight: %04X\n"
+            "        mapWidth:   %04X\n"
+            "        mapHeight:  %04X\n",
+            tileDimensions->unk00,
+            tileDimensions->unk02,
+            tileDimensions->tileWidth,
+            tileDimensions->tileHeight,
+            tileDimensions->mapWidth,
+            tileDimensions->mapHeight
+        );
+    }
+
+    if(objA->boTileDataInfo != 0)
+    {
+        uint32_t raTileDataInfo = bo_addr(rom, objA->boTileDataInfo);
+        tileDataInfo = (struct BlockInfo *) &rom->data[raTileDataInfo];
+        dump_block_info_field(fp, objA->boTileDataInfo, "boTileDataInfo", rom);
+    }
+
+    if(objA->boTilePaletteInfo != 0)
+    {
+        uint32_t raTilePaletteInfo = bo_addr(rom, objA->boTilePaletteInfo);
+        tilePaletteInfo = (struct BlockInfo *) &rom->data[raTilePaletteInfo];
+        dump_block_info_field(fp, objA->boTilePaletteInfo, "boTilePaletteInfo", rom);
+    }
+
+    if(objA->boTileMapInfo != 0)
+    {
+        uint32_t raTileMapInfo = bo_addr(rom, objA->boTileMapInfo);
+        tileMapInfo = (struct BlockInfo *) &rom->data[raTileMapInfo];
+        dump_block_info_field(fp, objA->boTileMapInfo, "boTileMapInfo", rom);
+    }
+
+    if(objA->boUnkData1Info != 0)
+    {
+        dump_block_info_field(fp, objA->boUnkData1Info, "boUnkData1Info", rom);
+    }
+
+    if(objA->boUnkData2Info != 0)
+    {
+        dump_block_info_field(fp, objA->boUnkData2Info, "boUnkData2Info", rom);
+    }
+
+    if(objA->boCollisionMapInfo != 0)
+    {
+        collisionMapInfo = (struct BlockInfo *) bo_ptr(rom, objA->boCollisionMapInfo);
+        dump_block_info_field(fp, objA->boCollisionMapInfo, "boCollisionMapInfo", rom);
+    }
+
+    fprintf(fp,
         "    unk54   %08X\n"
         "    unk58   %08X\n"
         "    unk5C   %08X\n"
         "    unk60   %08X\n\n",
-        objA_type, objA_unk02, objA_unk04, objA_bhvInitFunc, objA_unk0C, objA_unk10, objA_unk14, objA_objectId, objA_unk1A,
-        objA_tileDimensionsSize, objA_boTileDimensions,
-        objA_tileDataInfoSize, objA_boTileDataInfo,
-        objA_tilePaletteInfoSize, objA_boTilePaletteInfo,
-        objA_tileMapInfoSize, objA_boTileMapInfo,
-        objA_unkData1InfoSize, objA_boUnkData1Info,
-        objA_unkData2InfoSize, objA_boUnkData2Info,
-        objA_collisionMapInfoSize, objA_boCollisionMapInfo,
-        objA_unk54, objA_unk58, objA_unk5C, objA_unk60
+        objA->unk54, objA->unk58, objA->unk5C, objA->unk60
     );
+
+/*
+    if(tileDimensions && tilePaletteInfo && tileDataInfo && tileMapInfo)
+    {
+        //printf("%04X\n", objectId);
+
+        uint8_t  *tileData = (uint8_t *) malloc(tileDataInfo->size);
+        uint16_t *tilePalette = (uint16_t *) malloc(tilePaletteInfo->size);
+        uint16_t *tileMap = (uint16_t *) malloc(tileMapInfo->size);
+
+        block_info_copy_data(tileData, rom, tileDataInfo);
+        block_info_copy_data(tilePalette, rom, tilePaletteInfo);
+        block_info_copy_data(tileMap, rom, tileMapInfo);
+
+        // img convert here
+        uint8_t *image = malloc(tileDimensions->mapWidth * tileDimensions->mapHeight * 4);
+        tiled_ci8_to_rgba32(image, tileDimensions, tileData, tilePalette, tileMap);
+
+        free(tileData);
+        free(tilePalette);
+        free(tileMap);
+        free(image);
+    }
+    */
 }
 
-void dump_object_info_type_0001(FILE *fp, uint8_t *objA)
+void dump_object_info_type_0001(FILE *fp, struct ObjectA_0001 *objA)
 {
     // 803FB6E0
-    //printf("type 0001 unhandled\n");
-
-    uint16_t objA_type = U16_BE(objA, 0x00);
-    uint8_t  objA_unk04 = objA[0x04];
-    uint32_t objA_unk08 = U32_BE(objA, 0x08);
-    uint16_t objA_unk18 = U16_BE(objA, 0x18);
-    uint8_t  objA_unk1C = objA[0x1C];
-    uint8_t  objA_unk1D = objA[0x1D];
-    uint32_t objA_boUnk20 = U32_BE(objA, 0x20);
-    uint32_t objA_boUnk24 = U32_BE(objA, 0x24);
-    uint32_t objA_boUnk28 = U32_BE(objA, 0x28);
-    uint32_t objA_unk2C = U32_BE(objA, 0x2C);
-    uint32_t objA_boUnk30 = U32_BE(objA, 0x30);
-    uint32_t objA_unk34 = U32_BE(objA, 0x34);
-    uint32_t objA_unk38 = U32_BE(objA, 0x38);
-    uint32_t objA_unk3C = U32_BE(objA, 0x3C);
-    uint32_t objA_boUnk40 = U32_BE(objA, 0x40);
 
     fprintf(fp,
         "    type    %04X\n"
@@ -233,94 +259,76 @@ void dump_object_info_type_0001(FILE *fp, uint8_t *objA)
         "    unk38   %08X\n"
         "    unk3C   %08X\n"
         "    boUnk40 %08X\n\n",
-        objA_type, objA_unk04, objA_unk08, objA_unk18, objA_unk1C, objA_unk1D,
-        objA_boUnk20, objA_boUnk24, objA_boUnk28, objA_unk2C, objA_boUnk30,
-        objA_unk34, objA_unk38, objA_unk3C, objA_boUnk40
+        objA->head.type, objA->unk04, objA->unk08, objA->unk18, objA->unk1C, objA->unk1D,
+        objA->boUnk20, objA->boUnk24, objA->boUnk28, objA->unk2C, objA->boUnk30,
+        objA->unk34, objA->unk38, objA->unk3C, objA->boUnk40
     );
 }
 
-void  dump_object_info_type_0002(FILE *fp, uint8_t *objA)
+void dump_object_info_type_0002(FILE *fp, struct ObjectA_0002 *objA)
 {
-    uint16_t objA_type = U16_BE(objA, 0x00);
-    uint8_t  objA_unk04 = objA[0x04];         // 1 = use overlay, 0 = no overlay
-    uint32_t objA_unk08 = U32_BE(objA, 0x08); // rom start overlay file
-    uint32_t objA_unk0C = U32_BE(objA, 0x0C); // rom end overlay file
-    uint32_t objA_unk10 = U32_BE(objA, 0x10); // fake ram start
-    uint32_t objA_unk14 = U32_BE(objA, 0x14); // fake ram end
-
-    /*
-
-    */
-
-    /*
-        if unk04 is 00, unk08 is a pointer to a native function (8005BE50),
-        and unk0c,unk10,unk14 are 0
-    */
-
-   // 80081744 obj type 2 handler
-   // func_80081744(unk08, unk0c, unk10, unk14)
-   // {
-   //    res = func_80064DD0(unk14 - unk10)
-   //    if(!res) return;
-   //    func_8008169C(unk08, unk0c, unk10, unk14, res)
-   //    return res;
-   // }
-
     fprintf(fp,
-        "    type    %04X\n"
-        "    unk04   %02X\n"
-        "    unk08   %08X\n"
-        "    unk0C   %08X\n"
-        "    unk10   %08X\n"
-        "    unk14   %08X\n\n",
-        objA_type, objA_unk04, objA_unk08,
-        objA_unk0C, objA_unk10, objA_unk14);
+        "  ObjectA\n"
+        "    type        %04X\n"
+        "    useOverlay  %02X\n",
+        objA->head.type, objA->useOverlay
+    );
+
+    if(!objA->useOverlay)
+    {
+        fprintf(fp, "    nativeFunc      %08X\n", objA->asmInfo.nativeFunc);
+    }
+    else
+    {
+        struct OverlayInfo *ovlInfo = &objA->asmInfo.overlayInfo;
+
+        fprintf(fp,
+            "    ovlRomStart     %08X\n"
+            "    ovlRomEnd       %08X\n"
+            "    ovlFakeMemStart %08X\n"
+            "    ovlFakeMemEnd   %08X\n",
+            ovlInfo->romStart, ovlInfo->romEnd, ovlInfo->fakeMemStart, ovlInfo->fakeMemEnd
+        );
+    }
 }
 
 void dump_object_info(rom_t *rom, const char* path)
 {
+    printf("dumping object info... ");
+
     FILE *fp = fopen(path, "wb");
 
-    for(int i = 0; i < 1582; i++)
+    struct ObjectEntry *entries = (struct ObjectEntry *) &rom->data[ROM_OBJECT_LUT];
+
+    for(int i = 0; i < OBJECT_LUT_COUNT; i++)
     {
-        uint8_t *entry = &rom->data[ROM_OBJECT_LUT + i*12];
+        struct ObjectEntry *entry = &entries[i];
 
-        uint16_t entry_objectId = U16_BE(entry, 0x00);
-        uint32_t entry_objectUnk = U16_BE(entry, 0x02);
-        uint32_t entry_boObjectA = U32_BE(entry, 0x04);
-        uint32_t entry_boObjectB = U32_BE(entry, 0x08);
+        uint32_t raObjectA = bo_addr(rom, entry->boObjectA);
+        uint32_t raObjectB = bo_addr(rom, entry->boObjectB);
 
-        uint32_t raObjectA = bo_addr(rom, entry_boObjectA);
-        uint32_t raObjectB = bo_addr(rom, entry_boObjectB);
-
-        uint8_t *objA = &rom->data[raObjectA];
-        uint8_t *objB = &rom->data[raObjectB];
-
-        uint32_t objA_type = U16_BE(objA, 0x00);
+        struct ObjectA *objectA = (struct ObjectA *) &rom->data[raObjectA];
+        uint8_t *objectB = &rom->data[raObjectB];
 
         fprintf(fp, "id: %04X, boObjectA: %08X (%08X), boObjectB: %08X (%08X)\n",
-            entry_objectId, entry_boObjectA, raObjectA, entry_boObjectB, raObjectB);
+            entry->objectId, entry->boObjectA, raObjectA, entry->boObjectB, raObjectB);
 
-        switch(objA_type)
+        switch(objectA->type)
         {
-            case 0x0000:
-                dump_object_info_type_0000(fp, objA);
-                break;
-            case 0x0001: // yoshi
-                dump_object_info_type_0001(fp, objA);
-                break;
-            case 0x0002:
-                dump_object_info_type_0002(fp, objA);
-                //fprintf(fp, "type 0002 unhandled\n");
-                // 0x18 bytes each
-                // 00020000 01000000 00EABA90 00EAEC40 807B4800 807B7C40
-                break;
-            default:
-                fprintf(fp, "unhandled type %04X\n", objA_type);
+        case 0x0000:
+            dump_object_info_type_0000(fp, entry->objectId, (struct ObjectA_0000 *) objectA, rom);
+            break;
+        case 0x0001: // yoshi
+            dump_object_info_type_0001(fp, (struct ObjectA_0001 *) objectA);
+            break;
+        case 0x0002:
+            dump_object_info_type_0002(fp, (struct ObjectA_0002 *) objectA);
+            break;
+        default:
+            fprintf(fp, "unhandled type %04X\n", objectA->type);
         }
-
     }
-
+    printf("done\n");
     fclose(fp);
 }
 
