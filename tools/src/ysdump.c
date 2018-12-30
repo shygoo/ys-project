@@ -8,6 +8,10 @@
 #include "rom.h"
 #include "util.h"
 #include "ys_structs.h"
+#include "img.h"
+
+#include "stb_image.h"
+#include "stb_image_write.h"
 
 #define ROM_OBJECT_LUT 0x000A1C90
 #define OBJECT_LUT_COUNT 1582
@@ -79,10 +83,6 @@ void block_info_copy_data(void *dst, rom_t *rom, struct BlockInfo *blockInfo)
     }
 }
 
-void tiled_ci8_to_rgba32(uint8_t *image, struct TileDimensions *dimensions, uint8_t *tileData, uint16_t *tilePalette, uint16_t *tileMap)
-{
-
-}
 
 ///////////
 
@@ -105,6 +105,17 @@ void dump_block_info_field(FILE *fp, uint32_t boBlockInfo, const char *label, ro
     if(blockInfo->sizeEnc > blockInfo->size)
     {
         fprintf(fp, "        **** check size\n");
+    }
+}
+
+void copytile(uint32_t *outputBuf, int wrap, int x, int y, uint32_t *img, int width, int height)
+{
+    for(int i = 0; i < width; i++)
+    {
+        for(int j = 0; j < height; j++)
+        {
+            outputBuf[(y + j) * wrap + x + i] = img[j*width+i];
+        }
     }
 }
 
@@ -214,7 +225,7 @@ void dump_object_info_type_0000(FILE *fp, uint16_t objectId, struct ObjectA_0000
         objA->unk54, objA->unk58, objA->unk5C, objA->unk60
     );
 
-/*
+    //if(objectId == 0x8067)
     if(tileDimensions && tilePaletteInfo && tileDataInfo && tileMapInfo)
     {
         //printf("%04X\n", objectId);
@@ -227,16 +238,85 @@ void dump_object_info_type_0000(FILE *fp, uint16_t objectId, struct ObjectA_0000
         block_info_copy_data(tilePalette, rom, tilePaletteInfo);
         block_info_copy_data(tileMap, rom, tileMapInfo);
 
-        // img convert here
-        uint8_t *image = malloc(tileDimensions->mapWidth * tileDimensions->mapHeight * 4);
-        tiled_ci8_to_rgba32(image, tileDimensions, tileData, tilePalette, tileMap);
+        int numPixelsPerTile = tileDimensions->tileWidth * tileDimensions->tileHeight;
+        int numTiles = tileDataInfo->size / numPixelsPerTile;
+        int numTilesInMap = tileMapInfo->size / sizeof(uint16_t);
+
+        uint32_t *tileBank32 = malloc(numTiles * numPixelsPerTile * sizeof(uint32_t));
+
+        printf("w %d, h %d ", tileDimensions->tileWidth, tileDimensions->tileHeight);
+        printf("%04X numPixelsPerTile %d, numTiles %d (tileDataInfo->size 0x%04X), numTilesInMap %d\n", objectId, numPixelsPerTile, numTiles, tileDataInfo->size, numTilesInMap);
+
+        // convert all tiles to rgba32 images
+        for(int i = 0; i < numTiles; i++)
+        {
+            int offs = i * numPixelsPerTile;
+            ci8_to_rgba32(&tileBank32[offs], &tileData[offs], tilePalette, numPixelsPerTile);
+        }
+
+        if(objectId & 0x8000)
+        {
+            // dump tile bank to png
+            int tileBankHeight = numTiles * tileDimensions->tileHeight;
+            int tileBankWidth = tileDimensions->tileWidth;
+            char pngName[256];
+            sprintf(pngName, "bank_%04X.png", objectId);
+            stbi_write_png(pngName, tileDimensions->tileWidth, tileBankHeight, 4, tileBank32, tileBankWidth*4);
+
+            //printf("%d\n", tileMapInfo->size);
+
+            int mapWidthCalc = (tileMapInfo->size * numPixelsPerTile / sizeof(uint16_t)) / (tileDimensions->mapHeight);
+            int mapNumTilesXCalc = mapWidthCalc / tileDimensions->tileHeight;
+
+            int mapNumTilesX = mapWidthCalc / tileDimensions->tileWidth;
+            int mapNumTilesY = tileDimensions->mapHeight / tileDimensions->tileHeight;
+
+            if(mapWidthCalc != tileDimensions->mapWidth)
+            {
+                printf("map width overriden (%d to %d)\n", tileDimensions->mapWidth, mapWidthCalc);
+            }
+
+            // dump tile map to png
+            uint32_t *imgOut = malloc(mapWidthCalc * tileDimensions->mapHeight * sizeof(uint32_t));
+            uint32_t numPixelsInMapImage = numTilesInMap * numPixelsPerTile;
+
+            for(int tileMapIdx = 0; tileMapIdx < numTilesInMap; tileMapIdx++)
+            {
+                int row = tileMapIdx / mapNumTilesX;
+                int col = tileMapIdx % mapNumTilesX;
+
+                int tileBankIdx = BSWAP16(tileMap[tileMapIdx]);
+
+                int realRow = row;
+
+                if(mapNumTilesY >= 32)
+                {
+                    realRow = (row / 2) + ((row & 1) ? 16 : 0);
+                }
+
+                int x = col * tileDimensions->tileWidth;
+                int y = realRow * tileDimensions->tileHeight;
+
+                copytile(imgOut, mapNumTilesX * tileDimensions->tileWidth,
+                    x, y,
+                    &tileBank32[tileBankIdx * numPixelsPerTile],
+                    tileDimensions->tileWidth,
+                    tileDimensions->tileHeight);
+            }
+
+            //char pngName[256];
+            sprintf(pngName, "map_%04X.png", objectId);
+            stbi_write_png(pngName, mapWidthCalc, tileDimensions->mapHeight, 4, imgOut, mapWidthCalc*4);
+            free(imgOut);
+        }
 
         free(tileData);
         free(tilePalette);
         free(tileMap);
-        free(image);
+        free(tileBank32);
+        
     }
-    */
+    
 }
 
 void dump_object_info_type_0001(FILE *fp, struct ObjectA_0001 *objA)
@@ -348,7 +428,7 @@ int main(int argc, const char *argv[])
     makedir("dump");
     makedir("dump/smsr00");
 
-    dump_all_smsr00(&rom, "dump/smsr00");
+    //dump_all_smsr00(&rom, "dump/smsr00");
     dump_object_info(&rom, "dump/object_info.txt");
 
     rom_unload(&rom);

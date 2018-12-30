@@ -13,7 +13,7 @@ BDIR=bin
 $(ODIR)/%.o: $(SDIR)/%.c | $(ODIR)
 	$(CC) $(CFLAGS) -c $^ -o $@
 
-YSDUMP_OFILES=$(ODIR)/ysdump.o $(ODIR)/smsr00.o $(ODIR)/rom.o
+YSDUMP_OFILES=$(ODIR)/ysdump.o $(ODIR)/smsr00.o $(ODIR)/rom.o $(ODIR)/img.o
 
 $(BDIR)/ysdump: $(YSDUMP_OFILES) | $(BDIR)
 	$(LD) $(LDFLAGS) $(YSDUMP_OFILES) -o $(BDIR)/ysdump
