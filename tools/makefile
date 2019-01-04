@@ -8,23 +8,30 @@ SDIR=src
 ODIR=obj
 BDIR=bin
 
-.PHONY: clean ysdump
+.PHONY: clean ysdump ovl
 
 $(ODIR)/%.o: $(SDIR)/%.c | $(ODIR)
 	$(CC) $(CFLAGS) -c $^ -o $@
+
+#####################
 
 YSDUMP_OFILES=$(ODIR)/ysdump.o $(ODIR)/smsr00.o $(ODIR)/rom.o $(ODIR)/img.o
 
 $(BDIR)/ysdump: $(YSDUMP_OFILES) | $(BDIR)
 	$(LD) $(LDFLAGS) $(YSDUMP_OFILES) -o $(BDIR)/ysdump
 
-#$(ODIR)/smsr00.o: $(SDIR)/smsr00.c | $(ODIR)
-#	$(CC) $(CFLAGS) -c $(SDIR)/smsr00.c -o $@
-#
-#$(ODIR)/ysdump.o: $(SDIR)/ysdump.c | $(ODIR)
-#	$(CC) $(CFLAGS) -c $(SDIR)/ysdump.c -o $@
-	
 ysdump: $(BDIR)/ysdump
+
+#####################
+
+OVLDUMP_OFILES=$(ODIR)/ovldump.o $(ODIR)/mips_disasm.o $(ODIR)/rom.o
+
+$(BDIR)/ovldump: $(OVLDUMP_OFILES) | $(BDIR)
+	$(LD) $(LDFLAGS) $(OVLDUMP_OFILES) -o $(BDIR)/ovldump
+
+ovldump: $(BDIR)/ovldump
+
+#####################
 
 $(ODIR):
 	mkdir obj
