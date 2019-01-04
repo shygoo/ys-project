@@ -37,6 +37,9 @@ int main(int argc, const char *argv[])
     uint32_t ovlRomStart = 0x00CAFDD0;
     uint32_t ovlRomEnd  = 0x00CB0E70;
 
+    uint32_t ovlFakeMemStart = 0x80573E90;
+    uint32_t ovlFakeMemEnd   = 0x80579A40;
+
     uint32_t ovlSize = 0x00CB0E70 - 0x00CAFDD0;
 
     uint32_t metaSize = U32_BE(rom.data, ovlRomEnd - sizeof(uint32_t));
@@ -56,6 +59,12 @@ int main(int argc, const char *argv[])
 
     uint32_t *relocations = (uint32_t *) &meta[0x14];
 
+    //analyse(ovlFakeMemStart, ovl, textSize);
+    mips_analysis_t analysis;
+    mips_analysis_init(&analysis);
+    mips_analysis_run(&analysis, ovlFakeMemStart, text, textSize);
+    mips_analysis_free(&analysis);
+
     printf("// text:\n");
 
     for(int i = 0; i < textSize; i += 4)
@@ -64,15 +73,20 @@ int main(int argc, const char *argv[])
         opcode.bits = U32_BE(text, i);
         
         char code[64];
-        int res = disasm_opcode(code, i, opcode);
+        int res = disasm_opcode(code, ovlFakeMemStart + i, opcode);
+
+        if(mips_analysis_have_jal_target(&analysis, ovlFakeMemStart + i))
+        {
+            printf("\nfunc_%08X:\n", ovlFakeMemStart + i);
+        }
 
         if(res)
         {
-            printf("/*0x%02X*/ %s\n", i, code);
+            printf("/*0x%02X*/ %s\n", ovlFakeMemStart + i, code);
         }
         else
         {
-            printf("/*0x%02X*/ .dw 0x%08X // unknown opcode\n", i, opcode.bits);
+            printf("/*0x%02X*/ .dw 0x%08X // unknown opcode\n", ovlFakeMemStart + i, opcode.bits);
         }
         
     }
@@ -82,7 +96,7 @@ int main(int argc, const char *argv[])
     for(int i = 0; i < dataSize; i += 4)
     {
         uint32_t word = U32_BE(data, i);
-        printf("/*0x%02X*/ .dw 0x%08X\n", i, word);
+        printf("/*0x%02X*/ .dw 0x%08X\n", ovlFakeMemStart + textSize + i, word);
     }
 
     printf("\n// rodata:\n");
@@ -90,7 +104,7 @@ int main(int argc, const char *argv[])
     for(int i = 0; i < rodataSize; i += 4)
     {
         uint32_t word = U32_BE(rodata, i);
-        printf("/*0x%02X*/ .dw 0x%08X\n", i, word);
+        printf("/*0x%02X*/ .dw 0x%08X\n", ovlFakeMemStart + textSize + dataSize + i, word);
     }
 
     printf("\n// meta:\n");
