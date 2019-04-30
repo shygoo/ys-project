@@ -1,0 +1,955 @@
+Yoshi's Story Object Descriptions
+shygoo 2019
+
+Very rough draft
+
+IDs still todo:
+- 8000's
+- 4010 45D8 45DB 45B9 46BB 4733 473A 473E 473F
+- anything labelled "corrupt"
+
+ID   Description
+----------------
+4002 yoshi egg
+4003 ? (exporter corrupted texture)
+4004 yoshi egg
+4005 yoshi egg
+4006 happy yoshi
+4010 ? (exporter corrupted texture)
+4011 happy flower petal
+4013 fruit/balls/heart
+4015 red magikoopa
+4016 item pickup bubble graphic
+4017 item pickup numbers
+4028 fruit/balls/heart
+4029 fruit/balls/heart
+4030 fruit apple
+4031 fruit banana
+4032 fruit watermelon
+4033 fruit grapes
+4034 fruit/balls/heart
+4035 fruit/balls/heart
+4037 blue and white umbrella
+4038 seagull?
+4039 green/yellow/red leaf
+4040 other flyguy
+4041 bone/spring thing
+4042 bone/spring thing
+4043 shyguy holding object in front
+4044 shyguy holding object in front
+4045 shyguy holding object in front
+4046 flyguy
+4050 yellow bones
+4051 yellow bones
+4052 yellow bones
+4054 boo with pink/white box
+4055 pink/white box
+4056 boo with pink/white box
+4057 little boo
+4063 yellow bones
+4066 piranha plant head
+4067 piranha plant head
+4068 piranha plant stem?
+4070 coin
+4071 coin
+4074 coin with feet
+4075 chomp
+4080 vine
+4081 vine
+4082 handle with two wood things
+4083 handle with two wood things
+4084 handle with two wood things
+4085 question box/egg box
+4086 egg box
+4087 question box/egg box
+4089 other flyguy
+4095 ? (exporter corrupted texture)
+4096 ? (exporter corrupted texture)
+4107 green vine with spikes
+4108 spring
+4109 spring
+4110 wood thing
+4111 platform
+4112 bronze thing
+4113 black ball with spikes
+4115 ? (exporter corrupted texture)
+4118 ? (exporter corrupted texture)
+4120 black ball with spikes
+4123 brown bird thing
+4124 baseball thing
+4125 baseball thing
+4127 blue balloon guy
+4128 wood thing
+4129 bone dragon body
+4131 bone dragon bone
+4132 bone dragon bone
+4133 bone dragon bone
+4134 bone dragon bone
+4135 ? (exporter corrupted texture)
+4136 ? (exporter corrupted texture)
+4137 ? (exporter corrupted texture)
+4138 ? (exporter corrupted texture)
+4139 pin with rope
+4140 pirate flag
+4141 pirate sail
+4142 shyguy pirate with telescope
+4144 bobomb
+4146 start/goal flag
+4147 start flag pole
+4150 blue platform
+4151 blue platform
+4152 blue platform
+4153 blue platform
+4154 blue platform
+4155 blue platform
+4156 blue platform
+4157 blue platform
+4158 blue platform
+4159 blue platform
+4160 red platform
+4161 red platform
+4162 red platform
+4163 red platform
+4164 red platform
+4165 red platform
+4166 red platform
+4167 red platform
+4167 yellow platform
+4169 yellow platform
+4170 yellow platform
+4171 yellow platform
+4172 yellow platform
+4173 yellow platform
+4174 red arrow ball with gold thing
+4175 red arrow ball with gold thing
+4176 red arrow ball with gold thing
+4177 red arrow ball with gold thing
+4178 red arrow ball with gold thing
+4179 red arrow ball with gold thing
+4180 shyguy
+4181 shyguy
+4182 flyguy
+4183 flyguy
+4184 flyguy
+4185 flyguy
+4186 flyguy
+4187 flyguy
+4188 flyguy
+4189 flyguy
+4194 flyguy
+4195 red fish
+4198 shyguy holding object overhead
+4199 shyguy holding object overhead
+4200 warp pot
+4201 warp pot
+4202 warp pot
+4203 warp pot
+4204 warp pot
+4205 warp pot
+4206 warp pot
+4207 warp pot
+4208 warp pot
+4209 warp pot
+4210 warp pot
+4211 warp pot
+4212 warp pot
+4213 warp pot
+4214 warp pot
+4215 warp pot
+4220 warp pot
+4225 warp pot
+4226 warp pot
+4227 warp pot
+4228 warp pot
+4242 warp pot
+4243 warp pot
+4244 warp pot
+4246 warp pot
+4249 warp pot
+4256 warp pot
+4257 warp pot
+4258 warp pot
+4259 warp pot
+4260 warp pot
+4261 warp pot
+4262 warp pot
+4263 warp pot
+4264 warp pot
+4265 warp pot
+4266 warp pot
+4267 warp pot
+4268 warp pot
+4269 warp pot
+4270 warp pot
+4271 warp pot
+4272 warp pot
+4273 warp pot
+4274 warp pot
+4275 warp pot
+4276 warp pot
+4277 warp pot
+4278 warp pot
+4279 warp pot
+4280 warp pot
+4281 warp pot
+4282 warp pot
+4283 warp pot
+4284 warp pot
+4285 warp pot
+4286 warp pot
+4287 warp pot
+4288 warp pot
+4289 warp pot
+4299 door with keyhole
+4300 door with keyhole
+4301 key
+4302 pipe vertical
+4340 pipe vertical
+4341 pipe vertical
+4344 pipe vertical
+4345 pipe vertical
+4346 pipe vertical
+4347 pipe vertical
+4350 pipe vertical
+4351 pipe vertical
+4352 pipe vertical
+4353 pipe vertical
+4354 pipe vertical
+4355 pipe vertical
+4356 pipe vertical
+4357 pipe vertical
+4358 pipe vertical
+4359 pipe vertical
+4381 pipe vertical
+4382 pipe vertical
+4395 pipe horizontal
+4396 pipe horizontal
+4397 pipe horizontal
+4398 pipe horizontal
+4410 pipe horizontal
+4500 ? (exporter corrupted texture)
+4501 ? (exporter corrupted texture)
+4502 black thing
+4503 wood thing with rivets
+4504 1/2/3/4 red and blue hearts
+4507 miss warp 1
+4508 miss warp 2
+4509 miss warp 3
+4510 cartoon lakitu (unused?)
+4511 big red fish
+4515 blue/purple/green wood thing
+4516 bronze drop guy
+4517 bronze drop guy
+4518 bronze drop guy
+4520 black ball thing with eyes
+4521 black ball thing with eyes
+4522 black ball thing with eyes
+4523 black ball thing with eyes
+4524 question box/egg box
+4525 bee
+4526 yellow bird
+4537 pakederm stop sign
+4538 flower pot with melon graphic
+4539 blue bowl
+4540 purple blade?
+4541 purple blade?
+4542 purple blade?
+4543 purple blade?
+4544 purple blade?
+4547 shyguy
+4548 shyguy
+4549 shyguy
+4550 white blob
+4551 orange blob
+4555 sawblade
+4556 black ball thing with eyes
+4558 green thing
+4559 spikey purple thing
+4560 orange thing with spikes
+4562 ? (exporter corrupted texture)
+4563 ? (exporter corrupted texture)
+4565 ? (exporter corrupted texture)
+4567 blue spikey thing
+4568 blue spikey thing
+4571 pink fish with spikes
+4572 fish tail?
+4573 pink fish with spikes
+4574 pink fish with spikes
+4576 blue spikey thing
+4578 fire blaster?
+4579 fire blaster?
+4582 rock
+4583 red blob guy
+4584 wheel
+4585 wheel
+4586 wheel
+4587 wheel
+4588 wheel
+4589 wheel
+4590 button?
+4591 cloud with stitches
+4592 cloud with stitches 2
+4593 cloud with stitches 3
+4594 red blob guy
+4595 corkscrew
+4596 corkscrew
+4597 boo
+4598 boo
+4600 boo
+4601 boo
+4603 blue brick
+4604 blue brick
+4605 frog guy
+4606 frog guy
+4607 frog guy
+4615 spinning tablet with red switch graphic
+4616 spinning tablet with red switch graphic
+4621 yellow guy with teeth
+4622 yellow guy with teeth
+4623 yellow guy with teeth
+4624 yellow guy with teeth
+4625 yellow guy with teeth
+4626 yellow guy with teeth
+4629 propellers
+4631 blue fish
+4632 blue splash
+4633 not piranha plant
+4635 red pole (partially corrupt?)
+4636 yellow guy with teeth
+4637 yellow guy with teeth
+4639 death background
+4641 bomb
+4642 yellow thing
+4643 seagull head
+4644 seagull wings
+4645 brown pole
+4648 bomb
+4649 not piranha plant body and mouth
+4650 clam
+4652 vertical propellers
+4654 parachute
+4655 spinning tablet with red switch graphic
+4656 dead green yoshi
+4657 dead red yoshi
+4658 dead yellow yoshi
+4659 dead blue yoshi
+4660 melon graphic
+4661 melon graphic
+4662 melon graphic
+4663 melon graphic
+4664 melon graphic
+4665 melon graphic
+4666 melon graphic
+4667 melon graphic
+4668 blue platform
+4669 blue platform
+4670 cloud with stiches small
+4671 green fish thing with teeth
+4672 "GAME OVER"
+4673 "Select Yoshi"
+4674 pink and white flower thing
+4675 purple and white pole
+4676 blue brick
+4677 yellow guy with teeth
+4678 yellow guy with teeth
+4678 yellow guy with teeth
+4680 yellow thing
+4681 cloud of smoke
+4684 question box
+4686 flower stem
+4689 big heart
+4696 flyguy
+4697 flyguy
+4698 shyguy holding object overhead
+4699 question box/egg box
+4700 arrow sign
+4701 arrow sign
+4701 arrow sign
+4703 arrow sign
+4704 arrow sign
+4708 big plant with blue leaves
+4710 pointer hand
+4712 death magikoopa
+4713 death magikoopa propellers
+4714 blue drop
+4715 bowser jr
+4718 purple spikey guy
+4719 flag pole
+4726 big white shyguy
+4727 yoshi happy
+4729 big white shyguy
+4777 blue spikey thing
+400B red bar and ball
+400C red bar and ball
+401A parachute
+401C yoshi egg
+401D yoshi egg
+401E yoshi egg
+401F shyguy
+402A fruit/balls/heart
+402B fruit/balls/heart
+402C fruit/balls/heart
+402D fruit/balls/heart
+403A shyguy
+403B bronze drop guy
+403C bronze drop guy
+403D bronze drop guy
+403E boo
+403F boo
+404C bones
+404D bones
+404E bones
+404F bones
+406B bird with pokadot pants
+406C bird with pokadot pants
+406E plant in white bowl
+406F coin
+407B wood scraps ball
+407D platform
+407E platform
+407F platform
+408A other flyguy
+408B other flyguy
+408C other flyguy
+408D other flyguy
+408E ? (exporter corrupted texture) (other flyguy?)
+408F other flyguy
+409A wood thing with screw
+409C red blob
+409D spike ball with face
+409E penguin
+409F pink and green blob with wings
+40A1 blue and orange guy with wings
+40A2 fence
+40A4 fat green guy
+40A5 dots
+40A6 green foot
+40A7 lips
+40A8 blarg
+40A9 vine with spikes
+40AA vine with spikes
+40AB vine with spikes
+40AC vine with spikes
+40AD vine with spikes
+40AE rotating question box
+40B1 smiley cloud
+40B2 splash light blue
+40B3 splash blue
+40B4 spikey ball
+40B5 caterpillar head
+40B6 caterpillar body
+40B8 surprise ball
+40BE big gear
+40BF big gear
+40C0 big gear
+40C1 wood thing
+40C2 honeycomb
+40C3 fence
+40C5 big heart
+40C6 red drop-splash
+40C8 gradient white-cyan-blue-black
+40C9 gradient cyan-blue-black
+40CA gradient teal-black
+40CB gradient tan-white-cyan
+40CC gradient yellow-orange-red
+40CD gradient tan-black
+40CE gradient cyan-blue-black2
+40CF gradient purple-black
+40D0 gradient orange-red-black
+40D1 gradient yellow-red-black
+40D2 gradient yellow-red-blue
+40D3 gradient red-blue
+40D4 gradient black-red-yellow
+40D5 gradient black-brown-white
+40D7 smiley cloud
+40D8 smiley cloud
+40D9 smiley cloud
+40DA smiley cloud
+40DB smiley cloud
+40DC smiley cloud
+40DD smiley cloud
+40DE smiley cloud
+40DE smiley cloud
+40DF smiley cloud
+40E0 smiley cloud
+40E1 smiley cloud
+40E2 smiley cloud
+40E3 direction cloud
+40E4 direction cloud
+40E5 direction cloud
+40E6 direction cloud
+40E7 direction cloud
+40E8 direction cloud
+40E9 white thing
+40ED pointer hand
+40EE pointer hand
+40EF "push start" text
+40F5 level name banners
+410A spring
+410B spring
+410D shyguy holding some object
+410E wood block
+410F wood block
+411A wood block
+411B wood thing with circle
+411C orange and green rope horizontal
+411D orange and green rope horizontal
+411E orange and green rope horizontal
+411F black ball with spikes
+412A dragon skeleton head
+412B dragon skeleton bone
+413A fire ball with eyes
+413F ship with shyguys
+414A goal flag pole
+414B pole
+414C white ball thing with long snout and green muffs
+414D spikey pole horizontal
+414E green thing
+415A blue platform
+415B blue platform
+415C red platform
+415D red platform
+415E red platform
+415F red platform
+416A yellow platform
+416B yellow platform
+416C yellow platform
+416D yellow platform
+416E yellow platform
+416F yellow platform
+417A red arrow ball with gold thing
+417B red arrow ball with gold thing
+417C deck with screws
+417D deck with screws
+417E shyguy hidden
+417F shyguy hidden
+418A flyguy
+418B flyguy
+418C flyguy
+418D flyguy
+419A shyguy with fruit
+419B shyguy with fruit
+419C shyguy with fruit
+419D shyguy with fruit
+41A4 bowser jr
+41A5 bowser jr
+41A7 wood thing
+41C0 angry white thing
+41C0 fire blob with face
+41C1 angry white thing
+41C2 angry white thing
+41C3 angry white thing
+41C4 plant in white bowl
+41C5 plant in white bowl
+41C6 pink blob thing
+41C7 fire blob with face
+41C8 blue splash
+41CA pink snake platform
+41CB pink snake platform
+41CC green snake platform
+41CD green snake platform
+41CD ? (exporter corrupted texture)
+41D8 door
+41D9 door
+41DA fire flower
+41DB flower
+41DC flower stem
+41DD yellow bug
+41DE green glyphs
+41DF green glyphs
+41E2 platform
+41E3 platform
+41E4 platform
+41E5 platform
+41E6 platform
+41EC red blob guy
+41ED blue blob guy
+41EF yellow blob guy
+41F0 purple blob guy
+41F1 yoshi green
+41F2 yoshi red
+41F3 yoshi yellow
+41F4 yoshi blue
+41F5 yoshi lightblue
+41F6 yoshi pink
+41F7 yoshi white
+41F8 yoshi black
+41F9 shyguy
+41FA pointer hand
+41FC background select yoshi
+41FD warp pot
+41FE warp pot
+41FF warp pot
+420C warp pot
+420F warp pot
+422C warp pot
+424A warp pot
+425A warp pot
+425B warp pot
+425C warp pot
+425D warp pot
+425E warp pot
+425F warp pot
+426A warp pot
+426B warp pot
+426C warp pot
+426D warp pot
+426E warp pot
+426F warp pot
+427A warp pot
+427B warp pot
+427C warp pot
+427D warp pot
+427E warp pot
+427F warp pot
+428A warp pot
+428B warp pot
+428C warp pot
+428F warp pot
+429A door with keyhole
+429B door with keyhole
+429E door with keyhole
+42A0 door with keyhole
+42A1 door with keyhole
+42A2 door with keyhole
+42A3 door with keyhole
+42A4 door with keyhole
+42A5 door with keyhole
+42A7 door with keyhole
+42A8 door with keyhole
+42A9 door with keyhole
+42AA door with keyhole
+42AB door with keyhole
+42AC door with keyhole
+42AD door with keyhole
+42AE door with keyhole
+42AF door with keyhole
+42B0 door with keyhole
+42B1 door with keyhole
+42B2 door with keyhole
+42B3 door with keyhole
+42B4 door with keyhole
+42B5 door with keyhole
+42B6 door with keyhole
+42B7 door with keyhole
+42B8 door with keyhole
+42B9 door with keyhole
+42BA door with keyhole
+42BB door with keyhole
+42BC door with keyhole
+42C0 door with keyhole
+42C1 door with keyhole
+42EA door with keyhole
+42EB door with keyhole
+42EC door with keyhole
+42EE door with keyhole
+42EF door with keyhole
+42F0 door with keyhole
+42FF door with keyhole
+434A pipe vertical
+434B pipe vertical
+434C pipe vertical
+434D pipe vertical
+434E pipe vertical
+434F pipe vertical
+435A pipe vertical
+435B pipe vertical
+435D pipe vertical
+435E pipe vertical
+436A pipe vertical
+436B pipe vertical
+436C pipe vertical
+436D pipe vertical
+436E pipe vertical
+437F pipe vertical
+43AB pipe horizontal
+43AC pipe horizontal
+43AD pipe horizontal
+43AE pipe horizontal
+43C1 pipe vertical
+43C2 pipe vertical
+43C3 pipe vertical
+43C4 pipe vertical
+43C5 pipe vertical
+43C6 pipe vertical
+43C7 pipe vertical
+43C8 pipe vertical
+43C9 pipe vertical
+43CA pipe vertical
+43CB pipe vertical
+43CC pipe vertical
+43CD pipe vertical
+43CE pipe vertical
+43CF pipe vertical
+43D0 pipe vertical
+43D1 pipe vertical
+43D2 pipe vertical
+43D3 pipe vertical
+43D4 pipe vertical
+43D5 pipe vertical
+43D6 pipe vertical
+43D7 pipe vertical
+43D8 pipe vertical
+43D9 pipe vertical
+43DA pipe vertical
+43EB pipe aerial
+43EC pipe aerial
+43ED pipe aerial
+43EE pipe aerial
+43EF pipe aerial
+43F0 pipe aerial
+43F1 pipe aerial
+43F2 pipe aerial
+43F3 pipe aerial
+43F4 pipe aerial
+43F5 pipe aerial
+43F6 pipe aerial
+43F7 pipe aerial
+43F8 pipe aerial
+43F9 pipe aerial
+43FA pipe aerial
+43FB pipe aerial
+440B pipe vertical
+440C pipe vertical
+440D pipe vertical
+440E pipe vertical
+440F pipe vertical
+44CA warp effect
+44DB ? (exporter corrupted texture)
+44DC ? (exporter corrupted texture)
+44FD ? green red eyes
+44FE blue splash
+450A miss warp 1
+450F cartoon seagull (unused?)
+451C big pink bug thing
+451D big pink bug thing
+451E big pink bug thing
+451F big pink bug thing
+453A teapot and bucket
+453B pakederm
+453E purple blade?
+453F purple blade?
+454A shyguy holding object in front
+454B shyguy holding object in front
+454C shyguy holding object in front
+454D shyguy holding object in front
+454E shyguy holding object in front
+454F big yellow smiley cloud
+455B sawblade
+455C sawblade
+455D blue guy with spikes
+455E ? (exporter corrupted texture)
+457A fire blaster?
+457B fire blaster?
+457C little white piranha plant/red ball with spikes
+457D little white piranha plant/red ball with spikes
+457F little white piranha plant/red ball with spikes
+458A wheel
+458C wheel
+458D wheel
+458E cannon?
+458F bullet bill
+459B smiling mouth/black ball
+459C shiny blue object
+459D shiny blue object
+459E eyeball
+45A1 black ball lips
+45A2 black ball lips
+45A3 blue question box
+45A4 black ball lips
+45A5 monty mole?
+45A6 little blue caterpillar
+45A7 green leaf
+45A9 red numbers 1-7
+45AA column symbol
+45AB column symbol
+45AC column symbol
+45AD column symbol
+45B3 flyguy
+45B4 flyguy
+45B5 shyguy
+45B6 chilli pepper
+45B7 shyguy with muffs
+45B8 snowball?
+45B9 ? (exporter corrupted texture)
+45BB wheel
+45BC fruit melon hidden
+45BE barrel or something
+45BF fruit/balls/heart
+45C0 big heart
+45C2 pin? Lever?
+45C3 post
+45C4 ? (exporter corrupted texture)
+45C5 green frog guy
+45C6 green frog guy
+45C7 green frog guy
+45C8 green frog guy
+45C9 green frog guy
+45CA green frog guy
+45D0 smiley
+45D6 boo with blue blindfold pink wings
+45DA "reveal lucky fruit"
+45DD red splash
+45DE big fruit
+45DF big fruit
+45E0 big fruit
+45E1 big fruit
+45E3 flyguy
+45E4 flyguy
+45E5 suspended thing with gold spikes
+45E6 red switch
+45E7 spinning tablet with red switch graphic
+45E8 suspended thing with gold spikes
+45EA red box with gears
+45EB ball guy with teeth
+45EC red fish
+45ED red fish
+45EE blue brick
+45EF ? (exporter corrupted texture)
+45F1 red dragon body
+45F2 red dragon head
+45F3 fruit/balls/heart
+45F4 tip box
+45F6 melon graphic
+45F7 melon graphic
+45F8 melon graphic
+45F9 melon graphic
+45FA melon graphic
+45FB melon graphic
+45FC melon graphic
+45FD melon graphic
+45FE melon graphic
+45FF melon graphic
+460C green glyphs
+460D wood thing
+460E red switch
+460F red switch
+461C balloon with green spikes?
+461E frog guy
+461F frog guy
+462B shyguy in ball
+462C propellers
+462D ? (exporter corrupted texture)
+462E propellers
+463A moving death castle object
+463B blue drop
+463C death magikoopa propellers
+463D death bat
+463E death magikoopa
+464A green thing
+464C blue brick
+464D blue brick
+464E shyguy holding some object
+464F yellow brick
+465A dead lightblue yoshi
+465B dead pink yoshi
+465C dead white yoshi
+465D dead black yoshi
+465E melon graphic
+465F melon graphic
+466A surprise ball
+466B coin
+466C big heart
+466E cloud with stitches
+466F cloud with stitches 2
+467A yellow guy with teeth
+467B blue brick
+467D vertical brown bar
+467E vertical brown bar
+467F weird yellow shyguy
+468A blue platform
+468C fruit/balls/heart
+469A question box/egg box
+469B blue question box
+469C spring
+469D spring
+469E spring
+469F spring
+46A0 red ball with directions
+46A1 red ball with directions
+46A3 red ball with directions
+46A4 sawblade
+46A5 sawblade
+46A6 sawblade
+46A7 sawblade
+46AF blue thing with yellow spots
+46B0 green fish with teeth
+46B4 blue question box
+46B5 blue question box
+46B6 blue question box
+46B7 blue question box
+46B8 blue question box
+46BC level select menu tile
+46BD level select menu tile
+46BE level select menu tile
+46BF level select menu tile
+46C0 level select menu tile
+46C1 level select menu tile
+46C2 level select menu tile
+46C3 level select menu tile
+46C4 level select menu tile
+46C5 level select menu tile
+46C6 level select menu tile
+46C7 level select menu tile
+46C7 level select menu tile
+46C8 level select menu tile
+46C9 level select menu tile
+46CA level select menu tile
+46CB level select menu tile
+46CC level select menu tile
+46CD level select menu tile
+46CE level select menu tile
+46CF level select menu tile
+46D0 level select menu tile
+46D2 level select menu tile
+46D3 level select menu tile
+46D4 ? (exporter corrupted texture)
+46D5 ? (exporter corrupted texture)
+46D6 ? (exporter corrupted texture)
+46D7 ? (exporter corrupted texture)
+46D8 goal/start flag
+46D9 goal/start flag pole
+46DA yellow bird
+46DB shyguy
+46DC shyguy
+46DD shyguy
+46DE shyguy
+46DF shyguy
+46E0 shyguy
+46E1 blue question box
+46E4 piranha plant head
+46EA dog
+46EB green blob guy with black shell
+46EC hula shyguy
+46F5 green frog guy
+46F6 green frog guy
+46F7 big yoshi hand
+46F9 eyeball
+46FB arrow sign
+46FE arrow sign
+46FF arrow sign
+470F pink blob
+471B flower pot with melon graphic
+471C blue question box
+471D blue question box
+471E blue question box
+473B big heart
+473C coin
+473D secret coin
+
+
+Objects with no texture
+
+4001 Yoshi spawn point
+41E8 Path split right
+41EA Path split left
+45BD Hidden melon activator
+4536 Pak e derm
+41D1 Apple bubble
+41D2 Banana bubble
+41D3 Watermelon bubble
+41D5 Melon bubble
+46A8 Watermelon bubble 2
+
+
+8067 Level 1 terrain
